@@ -1,0 +1,8 @@
+requests
+opencv-python
+numpy
+tensorflow
+pytesseract
+Pillow
+pyaudio
+pynput
