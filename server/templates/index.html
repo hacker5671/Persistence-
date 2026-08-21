@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C2 Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { background: #0d1117; color: #c9d1d9; }
+        .agent-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 12px; margin: 8px; }
+        .log-area { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 10px; max-height: 400px; overflow-y: auto; }
+        .media-preview { max-width: 150px; }
+        .badge-online { background: #2ea043; }
+        .badge-offline { background: #da3633; }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h1>🔴 RedTeam C2</h1>
+    <div id="agents" class="row"></div>
+    <hr>
+    <div class="row">
+        <div class="col-md-8">
+            <h4>📋 Logs</h4>
+            <div id="logs" class="log-area"></div>
+        </div>
+        <div class="col-md-4">
+            <h4>📷 Media</h4>
+            <div id="media"></div>
+        </div>
+    </div>
+</div>
+<script>
+    const socket = io();
+    let agents = {};
+
+    function loadAgents() {
+        fetch('/api/agents')
+            .then(r => r.json())
+            .then(data => {
+                data.forEach(a => agents[a.id] = a);
+                renderAgents();
+            });
+    }
+
+    function renderAgents() {
+        const container = document.getElementById('agents');
+        container.innerHTML = Object.values(agents).map(a => `
+            <div class="col-md-3 agent-card">
+                <strong>${a.hostname}</strong>
+                <span class="badge badge-online">● online</span><br>
+                OS: ${a.os} (${a.arch})<br>
+                User: ${a.user}<br>
+                <small>Last seen: ${a.last_seen}</small>
+            </div>
+        `).join('');
+    }
+
+    socket.on('agent_online', (data) => {
+        agents[data.id] = data.info;
+        renderAgents();
+    });
+
+    socket.on('new_log', (data) => {
+        const logDiv = document.getElementById('logs');
+        const entry = document.createElement('div');
+        entry.innerHTML = `<strong>[${data.agent_id}]</strong> ${data.type}: ${data.data}`;
+        logDiv.prepend(entry);
+    });
+
+    setInterval(loadAgents, 3000);
+    loadAgents();
+</script>
+</body>
+</html>
